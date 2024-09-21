@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Simple http server with file upload</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <h2>Welcome to our simple http server</h2>
+        <p>this is served by node.js using http</p>
+
+        <h1> Upload a file</h1>
+        <form id ='file-upload-form'>
+            <input type="file" id="file-input" multiple>
+            <button type="submit">Upload Files</button>
+        </form>
+        <div id="upload-status"></div>
+    </body>
+    <script>
+        const form = document.getElementById('file-upload-form');
+        const fileInput = document.getElementById('file-input');
+        const statusDiv = document.getElementById('upload-status');
+
+        form.addEventListener('submit',async (event)=>{
+            event.preventDefault();
+
+            const files= fileInput.files; // the files to be uploaded
+
+            if (files.length===0)
+            {
+                statusDiv.textContent = 'Please select atleast one file';
+                return;
+            }
+
+            const formData = new FormData();
+            // containing the files into the formdata object
+            for(let i=0;i<files.length;i++)
+            {
+                formData.append('files',files[i]);
+            }
+
+            try{
+                const response = await fetch('/upload',{
+                    method:'POST',
+                    body: formData
+                });
+
+                if(response.ok){
+                    const data = await response.json();
+                    statusDiv.textContent = 'Files uploaded successfully: ${data.message}';
+
+                }
+                else{
+                    const error = await response.json();
+                    statusDiv.textContent = 'Error uploading files: ${error.message}';
+                }
+
+            } catch (error){
+                statusDiv.textContent = 'An error occurred: ${error.message}';
+            }
+        });
+    </script>
+</html>
+
